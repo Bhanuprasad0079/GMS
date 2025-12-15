@@ -1,5 +1,5 @@
 import React from "react";
-import Link from "next/link"; // Assuming you use Next.js Link for routing
+import Link from "next/link"; // use Next.js Link for routing
 
 const LandingPage = () => {
   return (

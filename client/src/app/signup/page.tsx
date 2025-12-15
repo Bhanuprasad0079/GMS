@@ -39,6 +39,29 @@ export default function SignUpPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // New function to handle Resend OTP
+  const handleResendOtp = async () => {
+    setIsSubmitting(true);
+    try {
+        const res = await fetch("http://localhost:5087/api/Auth/send-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contact: formData.contact })
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+            alert(data.debugOtp ? `DEV MODE: Your New OTP is ${data.debugOtp}` : "New OTP sent to your email!");
+        } else {
+            alert("Failed to resend OTP: " + (data.message || "Unknown error"));
+        }
+    } catch(err) {
+         alert("Server Error: Could not send OTP.");
+    } finally {
+         setIsSubmitting(false);
+    }
+  };
+
   const handleNext = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -47,15 +70,59 @@ export default function SignUpPage() {
         alert("Passwords do not match!");
         return;
       }
-      console.log("Sending OTP to", formData.contact);
-      setStep(2);
-    } else if (step === 2) {
-      if (formData.otp.length >= 4) {
-        setStep(3);
-      } else {
-        alert("Please enter a valid OTP");
+      
+      setIsSubmitting(true);
+      try {
+        const response = await fetch("http://localhost:5087/api/Auth/send-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contact: formData.contact }),
+        });
+        
+        const data = await response.json();
+
+        if (response.ok) {
+          if (data.debugOtp) alert(`DEV MODE: Your OTP is ${data.debugOtp}`);
+          setStep(2);
+        } else {
+          alert("Failed to send OTP: " + (data.message || "Unknown error"));
+        }
+      } catch (error) {
+        alert("Could not connect to the server.");
+      } finally {
+        setIsSubmitting(false);
       }
+
+    } else if (step === 2) {
+      // Step 2: Verify OTP
+      if (formData.otp.length < 4) {
+        alert("Please enter the full OTP");
+        return;
+      }
+
+      setIsSubmitting(true);
+      try {
+        const response = await fetch("http://localhost:5087/api/Auth/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ contact: formData.contact, otp: formData.otp }),
+        });
+
+        if (response.ok) {
+          setStep(3); // Only move to next step if OTP is valid
+        } else {
+          const data = await response.json();
+          alert(data.message || "Invalid OTP. Please try again or resend.");
+          // Ideally clear the OTP field here if desired, but keeping it allows user to fix typo
+        }
+      } catch (error) {
+        alert("Verification failed due to server error.");
+      } finally {
+        setIsSubmitting(false);
+      }
+
     } else {
+      // Step 3: Final Registration
       setIsSubmitting(true);
       try {
         const response = await fetch("http://localhost:5087/api/Auth/register", {
@@ -75,7 +142,7 @@ export default function SignUpPage() {
         if (response.ok) {
           setSuccessMessage("Registration Successful! Redirecting...");
           setTimeout(() => {
-            router.push("/login"); // Redirect to Login after signup usually
+            router.push("/login");
           }, 1500);
         } else {
           const errorData = await response.json().catch(() => ({}));
@@ -144,7 +211,7 @@ export default function SignUpPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><Lock className="text-gray-400 w-4 h-4" /></div>
-                  <input name="password" type="showPassword" required value={formData.password} onChange={handleChange} className="pl-10 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent block w-full p-2.5 placeholder-gray-400" placeholder="Password" />
+                  <input name="password" type={showPassword ? "text" : "password"} required value={formData.password} onChange={handleChange} className="pl-10 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent block w-full p-2.5 placeholder-gray-400" placeholder="Create a strong password" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -164,14 +231,14 @@ export default function SignUpPage() {
           {step === 2 && (
             <div className="space-y-6 text-center animate-fade-in">
               <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
-                <p className="text-gray-600 text-sm mb-2">OTP sent to:</p>
+                <p className="text-gray-600 text-sm mb-2">One Time Password (OTP) sent to:</p>
                 <p className="font-mono font-bold text-gray-900 text-lg tracking-wide">{formData.contact}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Enter 6-Digit Code</label>
                 <input name="otp" type="text" maxLength={6} required value={formData.otp} onChange={handleChange} className="bg-gray-50 border border-gray-300 text-gray-900 text-3xl font-mono tracking-[0.5em] text-center rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent block w-full p-4" placeholder="------" />
               </div>
-              <button type="button" className="text-sm text-blue-600 hover:text-blue-800 font-semibold underline">Resend OTP</button>
+              <button type="button" onClick={handleResendOtp} className="text-sm text-blue-600 hover:text-blue-800 font-semibold underline">Resend OTP</button>
             </div>
           )}
 

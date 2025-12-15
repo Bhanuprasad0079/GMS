@@ -11,5 +11,6 @@ namespace GrievanceAPI.Data
 
         // This line creates a "Users" table in your database
         public DbSet<User> Users { get; set; }
+        public DbSet<Ticket> Tickets { get; set; }
     }
 }

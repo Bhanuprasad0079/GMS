@@ -8,18 +8,18 @@ namespace GrievanceAPI.Models
         public int Id { get; set; }
 
         public string FullName { get; set; } = string.Empty;
-        
-        // This will store either Email or Mobile from your frontend
         public string Contact { get; set; } = string.Empty; 
-        
         public string PasswordHash { get; set; } = string.Empty;
         
-        public string Address { get; set; } = string.Empty;
+        // --- New Fields ---
+        public string Gender { get; set; } = string.Empty; // Gender
+        
+        public string Address { get; set; } = string.Empty; // Location
         public string State { get; set; } = string.Empty;
         public string District { get; set; } = string.Empty;
         public string Pincode { get; set; } = string.Empty;
 
-        // Default to "Citizen", can be "Admin" later
+        // Roles: "Citizen", "Admin" (Parent), "Admin_Child", "Worker"
         public string Role { get; set; } = "Citizen"; 
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

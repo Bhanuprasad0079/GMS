@@ -14,6 +14,9 @@ namespace GrievanceAPI.Models.Dto
         [MinLength(6)]
         public string Password { get; set; } = string.Empty;
 
+        // --- THIS WAS MISSING ---
+        public string Gender { get; set; } = string.Empty; 
+
         public string Address { get; set; } = string.Empty;
         public string State { get; set; } = string.Empty;
         public string District { get; set; } = string.Empty;
