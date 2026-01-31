@@ -94,7 +94,7 @@ cd GMS
 
 Navigate to the backend directory:
 ```bash
-cd backend1
+cd server
 ```
 
 **Initialize the Database**
@@ -115,7 +115,7 @@ http://localhost:5087
 ### 3. Frontend Setup (Next.js)
 Open a new terminal and navigate to the frontend directory:
 ```bash
-cd frontend
+cd client
 ```
 **Install Dependencies**
 ```bash
@@ -134,30 +134,29 @@ http://localhost:3000
 ## Configuration
 You must configure the backend to connect to your database and email service.
 
-Open backend1/appsettings.json and update the following values:
+Open server/appsettings.json and update the following values:
 ```json
+
 {
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=GrievanceDB;Trusted_Connection=True;MultipleActiveResultSets=true"
+  },
+  "EmailSettings": {
+    "Email": "your Email ID", 
+    "Password": "Email ID app Password"
+  },
+  "Jwt": {
+    "Key": "4pXJLekqJbDqK9IXplRMo57yE+3J4aUQgB/nHQBVJxQ=",
+    "Issuer": "http://localhost:5000",
+    "Audience": "http://localhost:3000"
+  },
   "Logging": {
     "LogLevel": {
       "Default": "Information",
       "Microsoft.AspNetCore": "Warning"
     }
   },
-  "AllowedHosts": "*",
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=GrievanceDB;Trusted_Connection=True;TrustServerCertificate=True;"
-  },
-  "EmailSettings": {
-    "SmtpServer": "smtp.gmail.com",
-    "Port": 587,
-    "SenderEmail": "your-email@gmail.com",
-    "SenderName": "Grievance Portal",
-    "Username": "your-email@gmail.com",
-    "Password": "YOUR_APP_PASSWORD_HERE"
-  },
-  "AppSettings": {
-    "Token": "YOUR_SUPER_SECRET_LONG_KEY_FOR_JWT_GENERATION"
-  }
+  "AllowedHosts": "*"
 }
 ```
 ## Important Email Note
