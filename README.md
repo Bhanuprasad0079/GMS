@@ -179,7 +179,7 @@ http://localhost:5087/swagger
 ```
 ## Temporarily Disable Authorization
 
-### 1. Open backend1/Controllers/AuthController.cs
+### 1. Open server/Controllers/AuthController.cs
 ### 2. Locate the CreateStaff method
 ### 3. Comment out:
 ```csharp
@@ -319,5 +319,5 @@ dotnet ef database update
 
 
 ---
-Designed and Developed by Bhanu Prasad Khuntia
-Bhanuprasad0079
+### Designed and Developed by Bhanu Prasad Khuntia
+## github: Bhanuprasad0079
