@@ -65,7 +65,7 @@ A fully responsive user interface built with Next.js and Tailwind CSS, including
 ### Backend
 - Framework: ASP.NET Core 8.0 Web API
 - Language: C#
-- Database: SQL Server (via Entity Framework Core)
+- Database: MS SQL Server (via Entity Framework Core)
 - Security: BCrypt Hashing, JWT Authentication, CORS Policies
 - Documentation: Swagger UI
 
