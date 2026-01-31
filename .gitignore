@@ -1,0 +1,24 @@
+# Node
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# .NET
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.cache
+*.sourcelink.json
+
+# Environment files
+appsettings.Development.json
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
