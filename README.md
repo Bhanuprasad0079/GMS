@@ -266,6 +266,58 @@ dotnet ef database update
 - Check backend logs for SMTP errors
 
 ---
+## Screenshots
 
+### Landing Page
+![Landing Page](GMS-3.0/screenshots/landingPage.png)
+
+---
+
+### Authentication
+
+#### Sign In
+![Sign In Page](GMS-3.0/screenshots/sign-inPage.png)
+
+#### Sign Up
+![Sign Up Page](GMS-3.0/screenshots/sing-upPage.png)
+
+---
+
+### Citizen Dashboard
+![User Dashboard](GMS-3.0/screenshots/userDashboard.png)
+
+---
+
+### Administrator Console
+
+#### Admin Dashboard – Overview
+![Admin Dashboard 1](GMS-3.0/screenshots/admindash1.png)
+
+#### Admin Dashboard – Analytics
+![Admin Dashboard 2](GMS-3.0/screenshots/adminDash2.png)
+
+#### Admin Dashboard – Ticket Management
+![Admin Dashboard 3](GMS-3.0/screenshots/admindash3.png)
+
+#### Admin Creation Panel
+![Admin Creation](GMS-3.0/screenshots/adminCreation.png)
+
+---
+
+### Field Worker Dashboard
+![Worker Dashboard](GMS-3.0/screenshots/workerdash.png)
+
+---
+
+### Email Notification System
+
+#### Email Service – Ticket Creation
+![Email Service 1](GMS-3.0/screenshots/emailService.png)
+
+#### Email Service – Status Update
+![Email Service 2](GMS-3.0/screenshots/emailService2.png)
+
+
+---
 Designed and Developed by Bhanu Prasad Khuntia
 Bhanuprasad0079
