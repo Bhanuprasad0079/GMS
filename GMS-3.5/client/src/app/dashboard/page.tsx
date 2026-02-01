@@ -106,12 +106,28 @@ export default function DashboardPage() {
         formData.append("Image", selectedFile);
       }
 
+      // const response = await fetch(`${API_BASE_URL}/api/Ticket/create`, {
+      //   method: "POST",
+      //   credentials: "include",
+      //   headers: {
+      //       "X-XSRF-TOKEN": getCsrfToken() // <--- 2. ADD CSRF HEADER
+      //       // Do NOT set Content-Type for FormData
+      //   },
+      //   body: formData, 
+      // });
+      const token = localStorage.getItem("token"); 
+
       const response = await fetch(`${API_BASE_URL}/api/Ticket/create`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-            "X-XSRF-TOKEN": getCsrfToken() // <--- 2. ADD CSRF HEADER
-            // Do NOT set Content-Type for FormData
+      method: "POST",
+    // credentials: "include",  <-- REMOVE THIS (It fails across domains like Vercel -> Render)
+      headers: {
+        // 2. Add the JWT Token. This is how the backend knows who you are.
+        "Authorization": `Bearer ${token}`, 
+        
+        // You can keep this if your backend specifically checks for it, but JWT usually replaces it.
+        "X-XSRF-TOKEN": getCsrfToken() 
+        
+        // 3. Do NOT set Content-Type manually. The browser sets it to 'multipart/form-data' automatically.
         },
         body: formData, 
       });
