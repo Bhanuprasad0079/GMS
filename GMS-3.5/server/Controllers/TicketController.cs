@@ -131,7 +131,7 @@ namespace GrievanceAPI.Controllers
                             <hr style='border: 0; border-top: 1px solid #eee;'/>
                             <p style='color: #059669; font-weight: bold;'>{workerMsg}</p>
                             <br/>
-                            <a href='http://localhost:3000/dashboard' style='background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Track Status</a>
+                            <a href='https://gms-sigma.vercel.app/dashboard' style='background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Track Status</a>
                         </div>";
                     
                     await _emailService.SendEmailAsync(userEmail, subject, body);
