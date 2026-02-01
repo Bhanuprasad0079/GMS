@@ -7,15 +7,10 @@
 
 // export default nextConfig;
 
-
-// 👇 Just a plain variable, no ": NextConfig" type
 const nextConfig = {
-  // 👇 1. Ignore Linting Errors
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  
-  // 👇 2. Ignore TypeScript Errors
+  // 👇 REMOVED the 'eslint' block from here because it causes the error.
+
+  // Keep this to ignore TypeScript errors
   typescript: {
     ignoreBuildErrors: true,
   },
