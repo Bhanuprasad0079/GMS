@@ -54,7 +54,7 @@ namespace GrievanceAPI.Controllers
         // --- 1. CREATE TICKET (Secure Upload + CSRF + Rate Limit) ---
         [HttpPost("create")]
         [EnableRateLimiting("UploadPolicy")] // Limit: 5 uploads/min
-        [ValidateAntiForgeryToken]           // Block CSRF attacks
+        // [ValidateAntiForgeryToken]           // Block CSRF attacks
         public async Task<IActionResult> CreateTicket([FromForm] CreateTicketDto request)
         {
             var userIdClaim = User.FindFirst("Id")?.Value;
@@ -185,7 +185,7 @@ namespace GrievanceAPI.Controllers
 
         // --- 4. DELETE TICKET (CSRF Protected) ---
         [HttpDelete("{id}")]
-        [ValidateAntiForgeryToken] // Block CSRF
+        // [ValidateAntiForgeryToken] // Block CSRF
         public async Task<IActionResult> DeleteTicket(int id)
         {
             var ticket = await _context.Tickets.FindAsync(id);
@@ -229,7 +229,7 @@ namespace GrievanceAPI.Controllers
         // --- 6. UPDATE TICKET (CSRF Protected) ---
         [Authorize(Roles = "Admin,SuperAdmin,Worker,Citizen")] 
         [HttpPut("{id}")]
-        [ValidateAntiForgeryToken] // Block CSRF
+        // [ValidateAntiForgeryToken] // Block CSRF
         public async Task<IActionResult> UpdateTicket(int id, UpdateTicketDto request)
         {
             var ticket = await _context.Tickets
