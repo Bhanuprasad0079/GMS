@@ -75,7 +75,7 @@ namespace GrievanceAPI.Controllers
             {
                 try 
                 {
-                    // Runs Magic Number check, Size check, and Re-encoding
+                    // Runs Magic Number check, Size check, and Uploads to Cloudinary
                     savedFileName = await _imageService.SaveSecureImageAsync(request.Image);
                 }
                 catch (Exception ex)
@@ -93,7 +93,7 @@ namespace GrievanceAPI.Controllers
                 Title = cleanTitle,
                 Category = finalCategory,
                 Description = cleanDesc,
-                AttachmentUrl = savedFileName, // Store secure filename only
+                AttachmentUrl = savedFileName, // Stores the Cloudinary URL
                 CreatorId = int.Parse(userIdClaim),
                 AssignedWorkerId = assignedWorker?.Id,
                 Status = assignedWorker != null ? "ASSIGNED" : "OPEN", 
@@ -161,16 +161,8 @@ namespace GrievanceAPI.Controllers
 
             if (!isAuthorized) return Forbid();
 
-            try 
-            {
-                var fileStream = _imageService.GetImageStream(ticket.AttachmentUrl);
-                var contentType = _imageService.GetContentType(ticket.AttachmentUrl);
-                return File(fileStream, contentType);
-            }
-            catch (FileNotFoundException)
-            {
-                return NotFound("File missing from server storage.");
-            }
+            // Redirect to the Secure Cloudinary URL
+            return Redirect(ticket.AttachmentUrl);
         }
 
         // --- 3. GET MY TICKETS ---

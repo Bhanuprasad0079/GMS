@@ -10,6 +10,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Http;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,8 +26,10 @@ builder.Services.AddScoped<ImageSecurityService>(); // Secure Image Handling
 builder.Services.AddScoped<IEmailService, EmailService>(); // Email Notifications
 
 // Database Connection
+// builder.Services.AddDbContext<AppDbContext>(options =>
+//     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // --- SECURITY: CSRF (ANTI-FORGERY) ---
 builder.Services.AddAntiforgery(options =>
