@@ -1,13 +1,13 @@
-# Build Stage
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# Build Stage - CHANGED "8.0" to "10.0"
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 COPY ["GrievanceAPI.csproj", "./"]
 RUN dotnet restore "GrievanceAPI.csproj"
 COPY . .
 RUN dotnet publish "GrievanceAPI.csproj" -c Release -o /app/publish
 
-# Serve Stage
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# Serve Stage - CHANGED "8.0" to "10.0"
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 8080
