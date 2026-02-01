@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { getCsrfToken } from "@/utils/csrf"; // <--- 1. IMPORT CSRF UTILITY
 import { formatDate } from "@/utils/date";
+import { API_BASE_URL } from '@/utils/api';
 
 // --- Interfaces ---
 interface Ticket { 
@@ -87,7 +88,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const initAdmin = async () => {
       try {
-        const meRes = await fetch("http://localhost:5087/api/Auth/me", { credentials: "include" });
+        const meRes = await fetch("${API_BASE_URL}/api/Auth/me", { credentials: "include" });
         if (!meRes.ok) { router.push("/login/adminloginpage"); return; }
 
         const user = await meRes.json();
@@ -106,17 +107,17 @@ export default function AdminDashboard() {
     setIsLoading(true);
     try {
         try {
-            const ticketRes = await fetch("http://localhost:5087/api/Ticket/all-tickets", { credentials: "include" });
+            const ticketRes = await fetch(`${API_BASE_URL}/api/Ticket/all-tickets`, { credentials: "include" });
             if (ticketRes.ok) setTickets(await ticketRes.json());
         } catch (e) { console.error("Failed to fetch tickets", e); }
 
         try {
-            const workerRes = await fetch("http://localhost:5087/api/Auth/get-workers", { credentials: "include" });
+            const workerRes = await fetch(`${API_BASE_URL}/api/Auth/get-workers`, { credentials: "include" });
             if (workerRes.ok) setWorkers(await workerRes.json());
         } catch (e) { console.error("Failed to fetch workers", e); }
 
         try {
-            const userRes = await fetch("http://localhost:5087/api/Auth/all-users", { credentials: "include" });
+            const userRes = await fetch(`${API_BASE_URL}/api/Auth/all-users`, { credentials: "include" });
             if (userRes.ok) setUsers(await userRes.json());
         } catch (e) { console.error("Failed to fetch users", e); }
 
@@ -131,7 +132,7 @@ export default function AdminDashboard() {
     if (!confirm(`Are you sure you want to reset the password for ${resetData.fullName}?`)) return;
 
     try {
-      const res = await fetch("http://localhost:5087/api/Auth/force-reset-password", {
+      const res = await fetch(`${API_BASE_URL}/api/Auth/force-reset-password`, {
         method: "PUT",
         headers: { 
             "Content-Type": "application/json",
@@ -154,7 +155,7 @@ export default function AdminDashboard() {
 
   const saveTicketEdit = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:5087/api/Ticket/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/Ticket/${id}`, {
         method: "PUT",
         headers: { 
             "Content-Type": "application/json",
@@ -173,7 +174,7 @@ export default function AdminDashboard() {
 
   const deleteTicket = async (id: number) => {
     if (!confirm("Permanently delete this ticket?")) return;
-    await fetch(`http://localhost:5087/api/Ticket/${id}`, { 
+    await fetch(`${API_BASE_URL}/api/Ticket/${id}`, { 
         method: "DELETE", 
         headers: { "X-XSRF-TOKEN": getCsrfToken() }, // <--- ADDED CSRF HEADER
         credentials: "include" 
@@ -183,7 +184,7 @@ export default function AdminDashboard() {
 
   const deleteUser = async (email: string) => {
     if (!confirm(`Delete user ${email}?`)) return;
-    await fetch(`http://localhost:5087/api/Auth/delete-user/${email}`, { 
+    await fetch(`${API_BASE_URL}7/api/Auth/delete-user/${email}`, { 
         method: "DELETE", 
         headers: { "X-XSRF-TOKEN": getCsrfToken() }, // <--- ADDED CSRF HEADER
         credentials: "include" 
@@ -196,7 +197,7 @@ export default function AdminDashboard() {
     const endpoint = newUser.role === "Citizen" ? "register" : "create-staff";
     const payload = { ...newUser, department: newUser.role === "Worker" ? newUser.department : "" };
 
-    const res = await fetch(`http://localhost:5087/api/Auth/${endpoint}`, {
+    const res = await fetch(`${API_BASE_URL}/api/Auth/${endpoint}`, {
         method: "POST",
         headers: { 
             "Content-Type": "application/json",
@@ -218,7 +219,7 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    await fetch("http://localhost:5087/api/Auth/logout", { 
+    await fetch("${API_BASE_URL}/api/Auth/logout", { 
         method: "POST", 
         headers: { "X-XSRF-TOKEN": getCsrfToken() }, // <--- ADDED CSRF HEADER
         credentials: "include" 
@@ -338,7 +339,7 @@ export default function AdminDashboard() {
                                             {/* --- IMAGE PROOF LINK --- */}
                                             {t.attachmentUrl && (
                                                 <a 
-                                                    href={`http://localhost:5087/api/Ticket/${t.id}/attachment`} 
+                                                    href={`${API_BASE_URL}/api/Ticket/${t.id}/attachment`} 
                                                     target="_blank" 
                                                     rel="noopener noreferrer"
                                                     className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded w-fit"
@@ -545,7 +546,7 @@ const ActivityLog = ({ ticketId }: { ticketId: number }) => {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const res = await fetch(`http://localhost:5087/api/Ticket/history/${ticketId}`, { credentials: "include" });
+                const res = await fetch(`${API_BASE_URL}/api/Ticket/history/${ticketId}`, { credentials: "include" });
                 if (res.ok) setLogs(await res.json());
             } catch (e) { console.error(e); } 
             finally { setLoading(false); }

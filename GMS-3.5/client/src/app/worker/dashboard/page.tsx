@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { getCsrfToken } from "@/utils/csrf"; // <--- 1. IMPORT CSRF HELPER
 import { formatDate } from "@/utils/date";
+import { API_BASE_URL } from '@/utils/api';
+
 
 // Interfaces
 interface User { fullName: string; contact: string; address: string; }
@@ -36,7 +38,7 @@ export default function WorkerDashboard() {
   useEffect(() => {
     const initWorker = async () => {
       try {
-        const meRes = await fetch("http://localhost:5087/api/Auth/me", { credentials: "include" });
+        const meRes = await fetch(`${API_BASE_URL}/api/Auth/me`, { credentials: "include" });
         if (!meRes.ok) { router.push("/login/workerloginpage"); return; }
         
         const user = await meRes.json();
@@ -55,7 +57,7 @@ export default function WorkerDashboard() {
   const fetchAssignedTickets = async (workerId: number) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`http://localhost:5087/api/Ticket/assigned-tickets/${workerId}`, { credentials: "include" });
+      const res = await fetch(`${API_BASE_URL}/api/Ticket/assigned-tickets/${workerId}`, { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setTickets(data);
@@ -67,7 +69,7 @@ export default function WorkerDashboard() {
   const updateStatus = async (ticketId: number, newStatus: string) => {
     setProcessingId(ticketId);
     try {
-      const res = await fetch(`http://localhost:5087/api/Ticket/${ticketId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/Ticket/${ticketId}`, {
         method: "PUT",
         headers: { 
             "Content-Type": "application/json",
@@ -86,7 +88,7 @@ export default function WorkerDashboard() {
 
   const updatePriority = async (ticketId: number, newPriority: string) => {
     try {
-        const res = await fetch(`http://localhost:5087/api/Ticket/${ticketId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/Ticket/${ticketId}`, {
             method: "PUT",
             headers: { 
                 "Content-Type": "application/json",
@@ -104,7 +106,7 @@ export default function WorkerDashboard() {
   const handleEscalate = async (ticketId: number) => {
     if(!confirm("Return this ticket to Admin pool? You will be unassigned.")) return;
     try {
-        const res = await fetch(`http://localhost:5087/api/Ticket/${ticketId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/Ticket/${ticketId}`, {
             method: "PUT",
             headers: { 
                 "Content-Type": "application/json",
@@ -121,7 +123,7 @@ export default function WorkerDashboard() {
   };
 
   const handleLogout = async () => {
-    await fetch("http://localhost:5087/api/Auth/logout", { 
+    await fetch(`${API_BASE_URL}/api/Auth/logout`, { 
         method: "POST", 
         headers: { "X-XSRF-TOKEN": getCsrfToken() }, // <--- 5. ADD CSRF HEADER
         credentials: "include" 
@@ -204,7 +206,7 @@ export default function WorkerDashboard() {
                         {ticket.attachmentUrl && (
                             <div className="mb-4">
                                 <a 
-                                    href={`http://localhost:5087/api/Ticket/${ticket.id}/attachment`} 
+                                    href={`${API_BASE_URL}/api/Ticket/${ticket.id}/attachment`} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg transition-colors border border-blue-100 dark:border-blue-900"
@@ -301,7 +303,7 @@ const ActivityLog = ({ ticketId }: { ticketId: number }) => {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const res = await fetch(`http://localhost:5087/api/Ticket/history/${ticketId}`, { credentials: "include" });
+                const res = await fetch(`${API_BASE_URL}/api/Ticket/history/${ticketId}`, { credentials: "include" });
                 if (res.ok) setLogs(await res.json());
             } catch (e) { console.error(e); } 
             finally { setLoading(false); }

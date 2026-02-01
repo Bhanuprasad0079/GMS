@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { Clock, User, CheckCircle, AlertCircle, ArrowUpCircle } from "lucide-react";
+import { API_BASE_URL } from '@/utils/api';
 
 interface Log {
     id: number;
@@ -17,7 +18,7 @@ export default function ActivityLog({ ticketId }: { ticketId: number }) {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
-                const res = await fetch(`http://localhost:5087/api/Ticket/history/${ticketId}`, { credentials: "include" });
+                const res = await fetch(`${API_BASE_URL}/api/Ticket/history/${ticketId}`, { credentials: "include" });
                 if (res.ok) setLogs(await res.json());
             } catch (e) { console.error(e); } 
             finally { setLoading(false); }

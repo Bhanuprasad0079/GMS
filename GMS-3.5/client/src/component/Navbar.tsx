@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   Menu, X, ShieldCheck, LogOut, Sun, Moon, User
 } from "lucide-react";
+import { API_BASE_URL } from '@/utils/api';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +20,7 @@ export default function Navbar() {
     // 1. AUTH CHECK
     const checkLoginStatus = async () => {
       try {
-        const res = await fetch("http://localhost:5087/api/Auth/me", { credentials: "include" });
+        const res = await fetch(`${API_BASE_URL}/api/Auth/me`, { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           setUserInfo(data);
@@ -54,7 +55,7 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:5087/api/Auth/logout", { method: "POST", credentials: "include" });
+      await fetch(`${API_BASE_URL}/api/Auth/logout`, { method: "POST", credentials: "include" });
     } catch (e) { console.error("Logout error", e); }
     localStorage.removeItem("user_info");
     setIsLoggedIn(false);

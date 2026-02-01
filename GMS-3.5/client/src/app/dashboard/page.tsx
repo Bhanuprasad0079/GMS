@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { getCsrfToken } from "@/utils/csrf"; // <--- 1. IMPORT CSRF HELPER
 import { formatDate } from "@/utils/date";
+import { API_BASE_URL } from '@/utils/api';
 
 // --- Types ---
 type TicketStatus = "OPEN" | "ASSIGNED" | "RESOLVED" | "CLOSED" | "RE-OPENED" | "IN_REVIEW";
@@ -55,7 +56,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const initDashboard = async () => {
       try {
-        const meRes = await fetch("http://localhost:5087/api/Auth/me", { credentials: "include" });
+        const meRes = await fetch(`${API_BASE_URL}/api/Auth/me`, { credentials: "include" });
         if (meRes.ok) {
           const user = await meRes.json();
           setUserInfo(user);
@@ -72,7 +73,7 @@ export default function DashboardPage() {
 
   const fetchTickets = async (id: number) => {
     try {
-      const res = await fetch(`http://localhost:5087/api/Ticket/my-tickets/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/Ticket/my-tickets/${id}`, {
         credentials: "include" 
       });
       if (res.ok) {
@@ -105,7 +106,7 @@ export default function DashboardPage() {
         formData.append("Image", selectedFile);
       }
 
-      const response = await fetch("http://localhost:5087/api/Ticket/create", {
+      const response = await fetch(`${API_BASE_URL}/api/Ticket/create`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -136,7 +137,7 @@ export default function DashboardPage() {
     if (!confirm("Are you sure you want to withdraw this grievance?")) return;
 
     try {
-      const response = await fetch(`http://localhost:5087/api/Ticket/${ticketId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/Ticket/${ticketId}`, {
         method: "DELETE",
         credentials: "include",
         headers: {
@@ -163,7 +164,7 @@ export default function DashboardPage() {
     if (!confirm(confirmMsg)) return;
 
     try {
-        const res = await fetch(`http://localhost:5087/api/Ticket/${ticketId}`, {
+        const res = await fetch(`${API_BASE_URL}/api/Ticket/${ticketId}`, {
             method: "PUT",
             headers: { 
                 "Content-Type": "application/json",
@@ -302,7 +303,7 @@ export default function DashboardPage() {
                                 {/* --- VIEW PROOF LINK --- */}
                                 {ticket.attachmentUrl && (
                                     <a 
-                                        href={`http://localhost:5087/api/Ticket/${ticket.id}/attachment`} 
+                                        href={`${API_BASE_URL}/api/Ticket/${ticket.id}/attachment`} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
                                         className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:underline bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded w-fit"
