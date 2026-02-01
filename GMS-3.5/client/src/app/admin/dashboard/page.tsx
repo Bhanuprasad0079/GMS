@@ -88,7 +88,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const initAdmin = async () => {
       try {
-        const meRes = await fetch("${API_BASE_URL}/api/Auth/me", { credentials: "include" });
+        const meRes = await fetch(`${API_BASE_URL}/api/Auth/me`, { credentials: "include" });
         if (!meRes.ok) { router.push("/login/adminloginpage"); return; }
 
         const user = await meRes.json();
@@ -219,7 +219,7 @@ export default function AdminDashboard() {
   };
 
   const handleLogout = async () => {
-    await fetch("${API_BASE_URL}/api/Auth/logout", { 
+    await fetch(`${API_BASE_URL}/api/Auth/logout`, { 
         method: "POST", 
         headers: { "X-XSRF-TOKEN": getCsrfToken() }, // <--- ADDED CSRF HEADER
         credentials: "include" 
