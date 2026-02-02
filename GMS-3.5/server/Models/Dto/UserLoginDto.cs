@@ -10,5 +10,6 @@ namespace GrievanceAPI.Models.Dto
 
         [Required]
         public string Password { get; set; } = string.Empty;
+        public string? RequiredRole { get; set; }
     }
 }

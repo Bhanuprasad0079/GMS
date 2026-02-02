@@ -67,7 +67,8 @@ export default function LoginPage() {
         credentials: "include",
         body: JSON.stringify({
           email: formData.email,
-          password: formData.password
+          password: formData.password,
+          requiredRole: "Citizen"
         }),
       });
 
