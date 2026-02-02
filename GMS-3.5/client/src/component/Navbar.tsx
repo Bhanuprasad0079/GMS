@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
-  Menu, X, ShieldCheck, LogOut, Sun, Moon, User
+  Menu, X, ShieldCheck, LogOut, Sun, Moon
 } from "lucide-react";
 import { API_BASE_URL } from '@/utils/api';
 
@@ -17,19 +17,39 @@ export default function Navbar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // 1. AUTH CHECK
+    // 1. AUTH CHECK (UPDATED TO USE TOKEN)
     const checkLoginStatus = async () => {
+      const token = localStorage.getItem("token"); // <--- GET TOKEN
+
+      if (!token) {
+        setIsLoggedIn(false);
+        setUserInfo(null);
+        return;
+      }
+
       try {
-        const res = await fetch(`${API_BASE_URL}/api/Auth/me`, { credentials: "include" });
+        // Send Token in Header instead of credentials: "include"
+        const res = await fetch(`${API_BASE_URL}/api/Auth/me`, { 
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${token}`, // <--- CRITICAL FIX
+            "Content-Type": "application/json"
+          }
+        });
+
         if (res.ok) {
           const data = await res.json();
           setUserInfo(data);
           setIsLoggedIn(true);
         } else {
+          // If token is expired or invalid (401), clear it
+          console.warn("Session expired or invalid token.");
+          localStorage.removeItem("token");
           setUserInfo(null);
           setIsLoggedIn(false);
         }
       } catch (e) {
+        console.error("Auth check error:", e);
         setIsLoggedIn(false);
       }
     };
@@ -49,18 +69,23 @@ export default function Navbar() {
 
     checkLoginStatus();
     checkTheme();
+    
+    // Listen for storage changes (in case login happens in another tab)
     window.addEventListener("storage", checkLoginStatus);
     return () => window.removeEventListener("storage", checkLoginStatus);
   }, [pathname]);
 
-  const handleLogout = async () => {
-    try {
-      await fetch(`${API_BASE_URL}/api/Auth/logout`, { method: "POST", credentials: "include" });
-    } catch (e) { console.error("Logout error", e); }
+  const handleLogout = () => {
+    // 1. Clear Local Data
+    localStorage.removeItem("token");
     localStorage.removeItem("user_info");
+    
+    // 2. Reset State
     setIsLoggedIn(false);
     setUserInfo(null);
     setIsOpen(false);
+    
+    // 3. Redirect
     router.push("/login");
   };
 
@@ -145,7 +170,7 @@ export default function Navbar() {
               <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right duration-500">
                 <div className="text-right hidden lg:block">
                   <p className="text-xs text-slate-400 uppercase tracking-wider">Signed in as</p>
-                  <p className="text-sm font-bold text-white leading-none">{userInfo?.fullName.split(' ')[0]}</p>
+                  <p className="text-sm font-bold text-white leading-none">{userInfo?.fullName?.split(' ')[0]}</p>
                 </div>
                 <button 
                   onClick={handleLogout}
