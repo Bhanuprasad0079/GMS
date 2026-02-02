@@ -54,29 +54,12 @@ export default function DashboardPage() {
   const [newTicket, setNewTicket] = useState({ title: "", category: CATEGORIES[0], description: "" });
   const [selectedFile, setSelectedFile] = useState<File | null>(null); 
 
-  // useEffect(() => {
-  //   const initDashboard = async () => {
-  //     try {
-  //       const meRes = await fetch(`${API_BASE_URL}/api/Auth/me`, { credentials: "include" });
-  //       if (meRes.ok) {
-  //         const user = await meRes.json();
-  //         setUserInfo(user);
-  //         fetchTickets(user.userId);
-  //       } else {
-  //         router.push("/login");
-  //       }
-  //     } catch (error) {
-  //       router.push("/login");
-  //     }
-  //   };
-  //   initDashboard();
-  // },
   useEffect(() => {
     const initDashboard = async () => {
       try {
-        const res = await apiFetch("/api/Auth/me"); // Simple call!
-        if (res.ok) {
-          const user = await res.json();
+        const meRes = await fetch(`${API_BASE_URL}/api/Auth/me`, { credentials: "include" });
+        if (meRes.ok) {
+          const user = await meRes.json();
           setUserInfo(user);
           fetchTickets(user.userId);
         } else {
@@ -87,7 +70,7 @@ export default function DashboardPage() {
       }
     };
     initDashboard();
-},
+  },
    [router]);
 
   const fetchTickets = async (id: number) => {
