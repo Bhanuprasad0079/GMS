@@ -98,72 +98,6 @@ namespace GrievanceAPI.Controllers
             return Ok(new { message = "Registration successful!" });
         }
 
-        // --- UPGRADED LOGIN (Rate Limiting + Lockout) ---
-        // [HttpPost("login")]
-        // public async Task<IActionResult> Login(UserLoginDto request)
-        // {
-        //     // 1. Artificial Delay to slow down brute-force scripts
-        //     await Task.Delay(500); 
-
-        //     var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
-
-        //     if (user == null) 
-        //         return Unauthorized(new { message = "Invalid email or password" }); // Generic error for security
-            
-
-        //     // 2. CHECK LOCKOUT STATUS
-        //     if (user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow)
-        //     {
-        //         var timeLeft = user.LockoutEnd.Value - DateTime.UtcNow;
-        //         return StatusCode(423, new { message = $"Account locked. Try again in {Math.Ceiling(timeLeft.TotalMinutes)} minutes." });
-        //     }
-
-        //     // 3. VERIFY PASSWORD
-        //     if (!BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-        //     {
-        //         // Increment Failure Count
-        //         user.FailedLoginAttempts++;
-
-        //         // Lock if attempts >= 5
-        //         if (user.FailedLoginAttempts >= 5)
-        //         {
-        //             user.LockoutEnd = DateTime.UtcNow.AddMinutes(15);
-        //             user.FailedLoginAttempts = 0; // Reset count so they start fresh after lockout
-        //             await _context.SaveChangesAsync();
-        //             return StatusCode(423, new { message = "Too many failed attempts. Account locked for 15 minutes." });
-        //         }
-
-        //         await _context.SaveChangesAsync();
-        //         return Unauthorized(new { message = "Invalid email or password" });
-        //     }
-
-        //     // 4. SUCCESS: RESET SECURITY COUNTERS
-        //     user.FailedLoginAttempts = 0;
-        //     user.LockoutEnd = null;
-        //     await _context.SaveChangesAsync();
-
-        //     // 5. GENERATE TOKEN
-        //     var tokenString = GenerateJwtToken(user);
-
-        //     // 6. SET SECURE COOKIE
-        //     var cookieOptions = new CookieOptions
-        //     {
-        //         HttpOnly = true,        // Prevent XSS
-        //         Secure = true,          // Required for SameSite=None
-        //         SameSite = SameSiteMode.None, // Allow cross-origin (Front:3000 -> Back:5087)
-        //         Expires = DateTime.UtcNow.AddDays(5)
-        //     };
-
-        //     Response.Cookies.Append("authToken", tokenString, cookieOptions);
-
-        //     return Ok(new
-        //     {
-        //         message = "Login successful",
-        //         userId = user.Id,
-        //         fullName = user.FullName,
-        //         role = user.Role
-        //     });
-        // }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(UserLoginDto request)
@@ -310,26 +244,38 @@ namespace GrievanceAPI.Controllers
         [HttpPost("send-reset-otp")]
         public async Task<IActionResult> SendResetOtp([FromBody] OtpRequestDto request)
         {
-            if (string.IsNullOrEmpty(request.Email)) 
+            if (string.IsNullOrWhiteSpace(request.Email))
                 return BadRequest(new { message = "Email is required." });
 
-        // CHECK: Does the user exist?
-            var user = await _context.Users.AnyAsync(u => u.Email == request.Email);
-    
-            if (!user)
-            {
-        // BLOCK: Don't waste an email/OTP on someone who isn't registered
-                return BadRequest(new { message = "No account found with this email. Please register first." });
-            }
+            var userExists = await _context.Users.AnyAsync(u => u.Email == request.Email);
+                if (!userExists)
+                return BadRequest(new { message = "No account found with this email." });
 
-        // Proceed with generating and sending OTP
             var otp = RandomNumberGenerator.GetInt32(100000, 999999).ToString();
-            _cache.Set(request.Email, otp, TimeSpan.FromMinutes(10)); // 10 mins for reset
+            _cache.Set($"RESET_{request.Email}", otp, TimeSpan.FromMinutes(10));
 
-            await _emailService.SendEmailAsync(request.Email, "Password Reset Code", $"Your reset code is: {otp}");
+            try
+            {
+                await _emailService.SendEmailAsync(
+                    request.Email,
+                    "Password Reset OTP",
+                    $"Your password reset OTP is {otp}. It expires in 10 minutes."
+                );
 
-            return Ok(new { message = "Reset code sent to your email." });
+            return Ok(new { message = "Reset OTP sent successfully." });
+            }
+            catch (Exception ex)
+            {
+            // LOG THIS — VERY IMPORTANT
+            Console.WriteLine("Brevo Reset OTP Error: " + ex.Message);
+
+            return StatusCode(500, new
+            {
+                message = "Unable to send reset OTP. Please try again later."
+            });
+            }
         }
+
 
 
         [Authorize(Roles = "Admin,SuperAdmin")]
