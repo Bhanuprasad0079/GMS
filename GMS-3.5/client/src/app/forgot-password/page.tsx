@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
     setIsSubmitting(true);
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/Auth/send-otp`, {
+      const response = await fetch(`${API_BASE_URL}/api/Auth/api/Auth/send-reset-otp`, {
         method: "POST",
         headers: { 
             "Content-Type": "application/json",
