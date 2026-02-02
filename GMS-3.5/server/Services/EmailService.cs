@@ -14,20 +14,25 @@ namespace GrievanceAPI.Services
 
         public async Task SendEmailAsync(string toEmail, string subject, string message)
         {
+        // These keys must match your Render environment variable structure
             var mail = _configuration["EmailSettings:Email"];
             var pw = _configuration["EmailSettings:Password"];
+            var host = _configuration["EmailSettings:Host"] ?? "smtp.gmail.com";
+            var portString = _configuration["EmailSettings:Port"] ?? "587";
+            int port = int.Parse(portString);
 
-            var client = new SmtpClient("smtp.gmail.com", 587)
+            using (var client = new SmtpClient(host, port))
             {
-                EnableSsl = true,
-                Credentials = new NetworkCredential(mail, pw)
-            };
+                client.EnableSsl = true;
+                client.Credentials = new NetworkCredential(mail, pw);
 
-            // Create the message object explicitly to set HTML mode
-            var mailMessage = new MailMessage(from: mail, to: toEmail, subject, message);
-            mailMessage.IsBodyHtml = true; // <--- THIS FIXES THE RAW TAGS ISSUE
+                var mailMessage = new MailMessage(from: mail, to: toEmail, subject, message)
+                {
+                    IsBodyHtml = true
+                };
 
-            await client.SendMailAsync(mailMessage);
+                await client.SendMailAsync(mailMessage);
+            }
         }
     }
 }
