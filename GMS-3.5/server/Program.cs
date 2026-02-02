@@ -109,7 +109,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowNextJs", policy =>
     {
         policy.WithOrigins(
-            "http://localhost:3000",
+            
             "https://gms-sigma.vercel.app") 
         // // Frontend Origin
               .AllowAnyMethod()
@@ -147,6 +147,8 @@ app.UseStaticFiles();
 
 // 3. CORS (Must be before Auth & CSRF)
 app.UseCors("AllowNextJs"); 
+
+app.UseCors("AllowVercel");
 
 // 4. Rate Limiting (Protect Resources)
 app.UseRateLimiter(); 

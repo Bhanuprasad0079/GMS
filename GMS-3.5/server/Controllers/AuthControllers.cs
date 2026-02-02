@@ -144,7 +144,7 @@ namespace GrievanceAPI.Controllers
                 HttpOnly = true,        // Prevent XSS
                 Secure = true,          // Required for SameSite=None
                 SameSite = SameSiteMode.None, // Allow cross-origin (Front:3000 -> Back:5087)
-                Expires = DateTime.UtcNow.AddDays(1)
+                Expires = DateTime.UtcNow.AddDays(5)
             };
 
             Response.Cookies.Append("authToken", tokenString, cookieOptions);
