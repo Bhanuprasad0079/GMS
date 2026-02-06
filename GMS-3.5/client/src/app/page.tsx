@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Added for routing logic
 import { 
   ShieldCheck, 
   Clock, 
@@ -19,6 +20,7 @@ const LandingPage = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -42,7 +44,6 @@ const LandingPage = () => {
           setUserRole(data.role);
           setIsLoggedIn(true);
         } else {
-          // If token is invalid, clear it to prevent infinite loops
           localStorage.removeItem("token");
         }
       } catch (err) {
@@ -55,16 +56,25 @@ const LandingPage = () => {
     checkUser();
   }, []);
 
-  // Determine the destination based on role
-  const getDynamicLink = () => {
-    if (!isLoggedIn) return "/login";
-    if (userRole === "Admin" || userRole === "SuperAdmin") return "/admin/dashboard";
-    if (userRole === "Worker") return "/worker/dashboard";
-    return "/dashboard"; // Standard Citizen Dashboard
-  };
+  // --- THE NEW LOGIC ---
+  const handleCitizenAccess = (e: React.MouseEvent) => {
+    // Check if user is Staff
+    if (userRole === "Admin" || userRole === "SuperAdmin" || userRole === "Worker") {
+      e.preventDefault(); // STOP the navigation
+      
+      const shouldSignOut = window.confirm(
+        "⚠️ Access Restricted\n\nYou are currently logged in as a Staff Member (Admin/Worker).\n\nTo File a Grievance or Track Status, you must use a Citizen account.\n\nDo you want to sign out now?"
+      );
 
-  const dashboardLink = getDynamicLink();
-  const isStaff = userRole === "Admin" || userRole === "SuperAdmin" || userRole === "Worker";
+      if (shouldSignOut) {
+        // Perform Logout
+        localStorage.removeItem("token");
+        localStorage.removeItem("user_info");
+        window.location.href = "/login"; // Redirect to login
+      }
+    }
+    // If Citizen or Not Logged In, the Link works normally (goes to /dashboard)
+  };
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
@@ -98,24 +108,23 @@ const LandingPage = () => {
             The trusted platform for citizens to report concerns and track resolutions. We ensure accountability and timely action for every grievance.
           </p>
 
-          {/* CTA Buttons - UPDATED LOGIC */}
+          {/* CTA Buttons - Using handleCitizenAccess to gate Admins */}
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-            <Link href={dashboardLink} className="w-full sm:w-auto">
+            
+            <Link href="/dashboard" onClick={handleCitizenAccess} className="w-full sm:w-auto">
               <button className="w-full sm:w-auto group flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold rounded-lg text-white bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 transition-all shadow-lg hover:-translate-y-0.5">
-                {isStaff ? "Manage Portal" : "File a Grievance"}
+                File a Grievance
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
             </Link>
 
-            {/* Only show "Track Status" if NOT staff */}
-            {!isStaff && (
-              <Link href={dashboardLink} className="w-full sm:w-auto">
-                <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-                  <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
-                  Track Status
-                </button>
-              </Link>
-            )}
+            <Link href="/dashboard" onClick={handleCitizenAccess} className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
+                Track Status
+              </button>
+            </Link>
+
           </div>
 
           {/* Trust Metrics */}
@@ -221,14 +230,14 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* --- CTA STRIP - UPDATED LOGIC --- */}
+      {/* --- CTA STRIP --- */}
       <section className="py-16 bg-slate-900 dark:bg-black text-white">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-2xl md:text-3xl font-bold mb-4">Empowering Citizens, Ensuring Accountability.</h2>
           <p className="text-slate-400 mb-8">Join the platform that is transforming public administration.</p>
-          <Link href={dashboardLink}>
+          <Link href="/dashboard" onClick={handleCitizenAccess}>
             <button className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-lg hover:-translate-y-0.5">
-              {isStaff ? "Go to Dashboard" : "Access Portal"}
+              Access Portal
             </button>
           </Link>
         </div>
