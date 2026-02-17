@@ -271,7 +271,6 @@
 
 // export default LandingPage;
 
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -288,6 +287,7 @@ import {
   Landmark,
   Lock
 } from "lucide-react";
+import { API_BASE_URL } from '@/utils/api';
 
 const LandingPage = () => {
   const router = useRouter();
@@ -298,20 +298,17 @@ const LandingPage = () => {
     setIsClient(true);
   }, []);
 
-  // 1. STRICT CITIZEN GUARD FOR "FILE" AND "TRACK" BUTTONS
-  const enforceCitizenRoute = (e: React.MouseEvent) => {
+  // --- 1. STRICT CITIZEN GUARD (For "File" & "Track" buttons) ---
+  const enforceCitizenRoute = async (e: React.MouseEvent) => {
     e.preventDefault();
     
-    // Read fresh from storage exactly when clicked
     const userInfoStr = localStorage.getItem("user_info");
     let activeRole = null;
 
     if (userInfoStr) {
       try {
         activeRole = JSON.parse(userInfoStr).role;
-      } catch (err) {
-        console.error("Failed to parse user info");
-      }
+      } catch (err) {}
     }
 
     if (activeRole === "Admin" || activeRole === "SuperAdmin" || activeRole === "Worker") {
@@ -320,17 +317,30 @@ const LandingPage = () => {
       );
 
       if (shouldSignOut) {
-        localStorage.removeItem("token");
+        // EXACT LOGIC FROM YOUR NAVBAR
+        try {
+          await fetch(`${API_BASE_URL}/api/Auth/logout`, { 
+            method: "POST", 
+            credentials: "include" 
+          });
+        } catch (err) { 
+          console.error("Logout error", err); 
+        }
+        
+        // Clear frontend storage
         localStorage.removeItem("user_info");
+        localStorage.removeItem("token");
+        
+        // Force full reload to login page
         window.location.href = "/login"; 
       }
     } else {
-      // If Citizen or Not Logged In, send to dashboard (dashboard handles its own login check)
+      // If Citizen or Not Logged In, go to dashboard
       router.push("/dashboard");
     }
   };
 
-  // 2. SMART ROUTING FOR THE BOTTOM "ACCESS PORTAL" BUTTON
+  // --- 2. SMART ROUTING (For "Access Portal" button) ---
   const handleAccessPortal = (e: React.MouseEvent) => {
     e.preventDefault();
     
@@ -343,11 +353,11 @@ const LandingPage = () => {
       } catch (err) {}
     }
 
-    // Send them to their specific portal based on your LoginPage routing
+    // Send them to their specific portal based on their role
     if (activeRole === "Admin" || activeRole === "SuperAdmin") {
-      router.push("/admin");
+      router.push("/admin/dashboard"); // Assuming this is your admin route
     } else if (activeRole === "Worker") {
-      router.push("/worker");
+      router.push("/worker/dashboard"); // Assuming this is your worker route
     } else if (activeRole === "Citizen") {
       router.push("/dashboard");
     } else {
@@ -355,7 +365,6 @@ const LandingPage = () => {
     }
   };
 
-  // Prevent rendering interactive bits until client-side hydration is done to avoid mismatch
   if (!isClient) return null; 
 
   return (
@@ -364,7 +373,6 @@ const LandingPage = () => {
       {/* --- HERO SECTION --- */}
       <section className="relative pt-20 pb-24 md:pt-32 md:pb-40 overflow-hidden">
         
-        {/* Background Texture */}
         <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05]" 
              style={{ backgroundImage: "linear-gradient(#000 1px, transparent 1px), linear-gradient(to right, #000 1px, transparent 1px)", backgroundSize: "40px 40px" }}>
         </div>
@@ -387,14 +395,15 @@ const LandingPage = () => {
             The trusted platform for citizens to report concerns and track resolutions. We ensure accountability and timely action for every grievance.
           </p>
 
-          {/* CTA Buttons - USING THE NEW CLICK HANDLER */}
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
             
+            {/* FILE GRIEVANCE (Uses enforceCitizenRoute) */}
             <button onClick={enforceCitizenRoute} className="w-full sm:w-auto group flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold rounded-lg text-white bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 transition-all shadow-lg hover:-translate-y-0.5">
               File a Grievance
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
 
+            {/* TRACK STATUS (Uses enforceCitizenRoute) */}
             <button onClick={enforceCitizenRoute} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
               <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
               Track Status
@@ -510,7 +519,7 @@ const LandingPage = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-4">Empowering Citizens, Ensuring Accountability.</h2>
           <p className="text-slate-400 mb-8">Join the platform that is transforming public administration.</p>
           
-          {/* BOTTOM BUTTON: Smart Routing */}
+          {/* ACCESS PORTAL (Uses handleAccessPortal) */}
           <button onClick={handleAccessPortal} className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-lg hover:-translate-y-0.5">
             Access Portal
           </button>
