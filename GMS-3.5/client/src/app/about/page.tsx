@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
   Target,
@@ -16,6 +17,41 @@ import {
 } from "lucide-react";
 
 const AboutPage = () => {
+
+   const router = useRouter();
+    const [isClient, setIsClient] = useState(false);
+  
+    // Ensure hydration matches between server and client
+    useEffect(() => {
+      setIsClient(true);
+    }, []);
+
+   const handleAccessPortal = (e: React.MouseEvent) => {
+      e.preventDefault();
+      
+    const userInfoStr = localStorage.getItem("user_info");
+      let activeRole = null;
+  
+      if (userInfoStr) {
+        try {
+          activeRole = JSON.parse(userInfoStr).role;
+        } catch (err) {}
+      }
+  
+      // Send them to their specific portal based on their role
+      if (activeRole === "Admin" || activeRole === "SuperAdmin") {
+        router.push("/admin/dashboard"); // Assuming this is your admin route
+      } else if (activeRole === "Worker") {
+        router.push("/worker/dashboard"); // Assuming this is your worker route
+      } else if (activeRole === "Citizen") {
+        router.push("/dashboard");
+      } else {
+        router.push("/login");
+      }
+    };
+  
+    if (!isClient) return null;
+  
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
       
@@ -164,7 +200,7 @@ const AboutPage = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/dashboard">
-                <button className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
+                <button onClick={handleAccessPortal} className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-lg hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2">
                   Access Portal <ArrowRight className="w-4 h-4"/>
                 </button>
               </Link>
