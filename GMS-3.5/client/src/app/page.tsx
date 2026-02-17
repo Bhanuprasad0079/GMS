@@ -271,6 +271,7 @@
 
 // export default LandingPage;
 
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -287,69 +288,75 @@ import {
   Landmark,
   Lock
 } from "lucide-react";
-import { API_BASE_URL } from '@/utils/api';
 
 const LandingPage = () => {
-  const [userRole, setUserRole] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
 
+  // Ensure hydration matches between server and client
   useEffect(() => {
-    const checkUser = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/Auth/me`, {
-          method: "GET",
-          headers: { 
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setUserRole(data.role);
-          setIsLoggedIn(true);
-        } else {
-          localStorage.removeItem("token");
-        }
-      } catch (err) {
-        console.error("Auth check failed", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkUser();
+    setIsClient(true);
   }, []);
 
-  // --- THE NEW LOGIC ---
-  const handleCitizenAccess = (e: React.MouseEvent) => {
-    e.preventDefault(); 
+  // 1. STRICT CITIZEN GUARD FOR "FILE" AND "TRACK" BUTTONS
+  const enforceCitizenRoute = (e: React.MouseEvent) => {
+    e.preventDefault();
     
-    // Check if user is Staff
-    if (userRole === "Admin" || userRole === "SuperAdmin" || userRole === "Worker") {
+    // Read fresh from storage exactly when clicked
+    const userInfoStr = localStorage.getItem("user_info");
+    let activeRole = null;
+
+    if (userInfoStr) {
+      try {
+        activeRole = JSON.parse(userInfoStr).role;
+      } catch (err) {
+        console.error("Failed to parse user info");
+      }
+    }
+
+    if (activeRole === "Admin" || activeRole === "SuperAdmin" || activeRole === "Worker") {
       const shouldSignOut = window.confirm(
-        "⚠️ Access Restricted\n\nYou are currently logged in as a Staff Member (Admin/Worker).\n\nTo File a Grievance or Track Status, you must use a Citizen account.\n\nDo you want to sign out now?"
+        "⚠️ Access Restricted\n\nYou are currently logged in as Staff.\nTo File a Grievance or Track Status, you must use a Citizen account.\n\nDo you want to sign out now?"
       );
 
       if (shouldSignOut) {
-        // Perform Logout
         localStorage.removeItem("token");
         localStorage.removeItem("user_info");
-        window.location.href = "/login"; // Force full reload to login page
+        window.location.href = "/login"; 
       }
     } else {
-      // If Citizen or Not Logged In, programmatically go to the dashboard
+      // If Citizen or Not Logged In, send to dashboard (dashboard handles its own login check)
       router.push("/dashboard");
     }
   };
+
+  // 2. SMART ROUTING FOR THE BOTTOM "ACCESS PORTAL" BUTTON
+  const handleAccessPortal = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    const userInfoStr = localStorage.getItem("user_info");
+    let activeRole = null;
+
+    if (userInfoStr) {
+      try {
+        activeRole = JSON.parse(userInfoStr).role;
+      } catch (err) {}
+    }
+
+    // Send them to their specific portal based on your LoginPage routing
+    if (activeRole === "Admin" || activeRole === "SuperAdmin") {
+      router.push("/admin");
+    } else if (activeRole === "Worker") {
+      router.push("/worker");
+    } else if (activeRole === "Citizen") {
+      router.push("/dashboard");
+    } else {
+      router.push("/login");
+    }
+  };
+
+  // Prevent rendering interactive bits until client-side hydration is done to avoid mismatch
+  if (!isClient) return null; 
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
@@ -364,7 +371,6 @@ const LandingPage = () => {
 
         <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 flex flex-col items-center text-center">
           
-          {/* Badge */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
             <span className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-widest">
@@ -372,33 +378,30 @@ const LandingPage = () => {
             </span>
           </div>
           
-          {/* Headline */}
           <h1 className="max-w-4xl text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-slate-900 dark:text-white mb-6 leading-tight animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
             Secure, Transparent, <br className="hidden md:block" />
             <span className="text-emerald-600 dark:text-emerald-500">Public Redressal System</span>
           </h1>
           
-          {/* Subheadline */}
           <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
             The trusted platform for citizens to report concerns and track resolutions. We ensure accountability and timely action for every grievance.
           </p>
 
-          {/* CTA Buttons - Removed <Link> and directly applied onClick to buttons */}
+          {/* CTA Buttons - USING THE NEW CLICK HANDLER */}
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
             
-            <button onClick={handleCitizenAccess} className="w-full sm:w-auto group flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold rounded-lg text-white bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 transition-all shadow-lg hover:-translate-y-0.5">
+            <button onClick={enforceCitizenRoute} className="w-full sm:w-auto group flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold rounded-lg text-white bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-700 transition-all shadow-lg hover:-translate-y-0.5">
               File a Grievance
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
 
-            <button onClick={handleCitizenAccess} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+            <button onClick={enforceCitizenRoute} className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3.5 text-base font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
               <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
               Track Status
             </button>
 
           </div>
 
-          {/* Trust Metrics */}
           <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 border-t border-slate-200 dark:border-slate-800 pt-8 animate-in fade-in duration-1000 delay-500">
             <div className="flex flex-col items-center">
               <Landmark className="w-6 h-6 text-slate-400 mb-2" />
@@ -507,8 +510,8 @@ const LandingPage = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-4">Empowering Citizens, Ensuring Accountability.</h2>
           <p className="text-slate-400 mb-8">Join the platform that is transforming public administration.</p>
           
-          {/* Removed <Link> wrapper here too */}
-          <button onClick={handleCitizenAccess} className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-lg hover:-translate-y-0.5">
+          {/* BOTTOM BUTTON: Smart Routing */}
+          <button onClick={handleAccessPortal} className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all shadow-lg hover:-translate-y-0.5">
             Access Portal
           </button>
           
